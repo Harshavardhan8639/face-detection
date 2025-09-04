@@ -6,36 +6,21 @@ import numpy as np
 # Load the face detector
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-st.title("Live Face Detection")
+st.title("Face Detection App (Upload Image)")
 
-run = st.checkbox('Start Webcam')
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
-FRAME_WINDOW = st.image([])
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    img_array = np.array(image.convert('RGB'))
+    gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
 
-camera = cv2.VideoCapture(0)
-
-while run:
-    ret, frame = camera.read()
-    if not ret:
-        st.write("Failed to grab frame.")
-        break
-
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    # Detect faces
     faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
-    # Draw rectangles
+    # Draw rectangles around faces
     for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        cv2.rectangle(img_array, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-    # Convert to RGB (for PIL compatibility)
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    # Display frame in Streamlit
-    FRAME_WINDOW.image(frame)
-
-camera.release()
-
-
+    st.image(img_array, caption='Processed Image', use_column_width=True)
+    st.success(f"Detected {len(faces)} face(s)")
 
